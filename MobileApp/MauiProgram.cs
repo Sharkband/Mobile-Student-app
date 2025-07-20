@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using MobileApp.Views;
+using MobileApp.ViewModels;
 
 namespace MobileApp
 {
@@ -18,6 +20,8 @@ namespace MobileApp
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
+            builder.Services.AddSingleton<MainPage>();
+            builder.Services.AddSingleton<MainViewModel>();
 
             return builder.Build();
         }
