@@ -98,15 +98,15 @@ namespace MobileApp.ViewModels
         private async Task NavigateToQuiz()
         {
             // TODO: Navigate to quiz page
-            // Example: await Shell.Current.GoToAsync("//quiz");
-            await Application.Current.MainPage.DisplayAlert("Navigation", "Navigate to Quiz Page", "OK");
+            await Shell.Current.GoToAsync("//quiz");
+            //await Application.Current.MainPage.DisplayAlert("Navigation", "Navigate to Quiz Page", "OK");
         }
 
         private async Task NavigateToFlashcards()
         {
             // TODO: Navigate to flashcards page  
-            // Example: await Shell.Current.GoToAsync("//flashcards");
-            await Application.Current.MainPage.DisplayAlert("Navigation", "Navigate to Flashcards Page", "OK");
+            await Shell.Current.GoToAsync("//flashcards");
+            //await Application.Current.MainPage.DisplayAlert("Navigation", "Navigate to Flashcards Page", "OK");
         }
 
         public void UpdateUserStats(int streak, int points, int subjects)

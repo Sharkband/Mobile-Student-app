@@ -6,9 +6,12 @@
     xmlns:views="clr-namespace:MobileApp.Views"
     Title="MobileApp">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate views:MainPage}"
-        Route="MainPage" />
+    <ShellContent Title="Home" ContentTemplate="{DataTemplate views:MainPage}" Route="MainPage" />
+
+    <ShellContent Title="Quiz" Route="quiz" ContentTemplate="{DataTemplate views:QuizPage}" />
+
+    <ShellContent Title="Flashcards" Route="flashcards" ContentTemplate="{DataTemplate views:FlashcardPage}" />
+
+    <ShellContent Title="Settings" Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}" />
 
 </Shell>

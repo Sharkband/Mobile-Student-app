@@ -1,12 +1,141 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="MobileApp.Views.FlashcardPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MobileApp.Views.FlashcardPage"
-             Title="FlashcardPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             xmlns:viewmodels="clr-namespace:MobileApp.ViewModels"
+             Title="Flashcards"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header with progress -->
+        <StackLayout Grid.Row="0" Padding="20,10" BackgroundColor="{DynamicResource PrimaryColor}">
+            <Label Text="{Binding ProgressText}" 
+                   TextColor="White" 
+                   FontSize="16" 
+                   HorizontalOptions="Center" />
+            <ProgressBar Progress="{Binding Progress}" 
+                        ProgressColor="White" 
+                        BackgroundColor="#66FFFFFF" 
+                        Margin="0,5,0,0" />
+        </StackLayout>
+
+        <!-- Main flashcard area -->
+        <Frame Grid.Row="1" 
+               Margin="20" 
+               Padding="30" 
+               BackgroundColor="White" 
+               BorderColor="{DynamicResource PrimaryColor}" 
+               CornerRadius="15" 
+               HasShadow="True">
+
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding FlipCardCommand}" />
+            </Frame.GestureRecognizers>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Card type indicator -->
+                <Label Grid.Row="0" 
+                       Text="{Binding CardSideText}" 
+                       TextColor="{DynamicResource PrimaryColor}" 
+                       FontSize="12" 
+                       FontAttributes="Bold" 
+                       HorizontalOptions="Center" 
+                       Margin="0,0,0,20" />
+
+                <!-- Main content -->
+                <ScrollView Grid.Row="1" VerticalOptions="FillAndExpand">
+                    <Label Text="{Binding CurrentCardContent}" 
+                           FontSize="24" 
+                           TextColor="Black" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" 
+                           HorizontalTextAlignment="Center" 
+                           VerticalTextAlignment="Center" />
+                </ScrollView>
+
+                <!-- Tap instruction -->
+                <Label Grid.Row="2" 
+                       Text="Tap to flip" 
+                       TextColor="Gray" 
+                       FontSize="14" 
+                       FontAttributes="Italic" 
+                       HorizontalOptions="Center" 
+                       Margin="0,20,0,0" />
+            </Grid>
+        </Frame>
+
+        <!-- Navigation buttons -->
+        <Grid Grid.Row="2" Margin="20,0,20,10" ColumnSpacing="15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" 
+                    Text="Previous" 
+                    BackgroundColor="{DynamicResource SecondaryColor}" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding PreviousCardCommand}"
+                    IsEnabled="{Binding CanGoPrevious}" />
+
+            <Button Grid.Column="1" 
+                    Text="Shuffle" 
+                    BackgroundColor="{DynamicResource TertiaryColor}" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding ShuffleCardsCommand}" />
+
+            <Button Grid.Column="2" 
+                    Text="Next" 
+                    BackgroundColor="{DynamicResource SecondaryColor}" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding NextCardCommand}"
+                    IsEnabled="{Binding CanGoNext}" />
+        </Grid>
+
+        <!-- Action buttons -->
+        <Grid Grid.Row="3" Margin="20,0,20,20" ColumnSpacing="15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" 
+                    Text="Mark as Known" 
+                    BackgroundColor="#4CAF50" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding MarkAsKnownCommand}" />
+
+            <Button Grid.Column="1" 
+                    Text="Need Practice" 
+                    BackgroundColor="#FF9800" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding MarkForPracticeCommand}" />
+        </Grid>
+    </Grid>
 </ContentPage>

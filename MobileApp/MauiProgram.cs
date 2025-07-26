@@ -21,7 +21,12 @@ namespace MobileApp
     		builder.Logging.AddDebug();
 #endif
             builder.Services.AddSingleton<MainPage>();
+            builder.Services.AddSingleton<QuizPage>();
+            builder.Services.AddSingleton<FlashcardPage>();
+
             builder.Services.AddSingleton<MainViewModel>();
+            builder.Services.AddSingleton<QuizViewModel>();
+            builder.Services.AddSingleton<FlashcardViewModel>();
 
             return builder.Build();
         }

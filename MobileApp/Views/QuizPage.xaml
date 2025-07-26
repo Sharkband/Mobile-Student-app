@@ -1,12 +1,343 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="MobileApp.Views.QuizPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MobileApp.Views.QuizPage"
-             Title="NewPage1">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             xmlns:viewmodels="clr-namespace:MobileApp.ViewModels"
+             Title="Quiz"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <Grid>
+        <!-- Section Selection View -->
+        <ScrollView IsVisible="{Binding IsSectionSelectionVisible}" Padding="20">
+            <StackLayout Spacing="20">
+
+                <!-- Header -->
+                <StackLayout BackgroundColor="{DynamicResource PrimaryColor}" Padding="20" Margin="-20,0,-20,0">
+                    <Label Text="Choose Quiz Section" 
+                           FontSize="24" 
+                           FontAttributes="Bold" 
+                           TextColor="White" 
+                           HorizontalOptions="Center" />
+                    <Label Text="Select a topic to start your quiz" 
+                           FontSize="16" 
+                           TextColor="White" 
+                           HorizontalOptions="Center" 
+                           Margin="0,5,0,0" />
+                </StackLayout>
+
+                <!-- Quiz Sections -->
+                <CollectionView ItemsSource="{Binding QuizSections}" 
+                               SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="0,10">
+                                <Frame BackgroundColor="White" 
+                                       BorderColor="{Binding Color}" 
+                                       CornerRadius="15" 
+                                       HasShadow="True" 
+                                       Padding="20">
+
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:QuizViewModel}}, Path=StartQuizCommand}" 
+                                                            CommandParameter="{Binding .}" />
+                                    </Frame.GestureRecognizers>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Icon -->
+                                        <Label Grid.Column="0" 
+                                               Text="{Binding Icon}" 
+                                               FontSize="30" 
+                                               VerticalOptions="Center" 
+                                               Margin="0,0,15,0" />
+
+                                        <!-- Content -->
+                                        <StackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" 
+                                                   FontSize="18" 
+                                                   FontAttributes="Bold" 
+                                                   TextColor="Black" />
+                                            <Label Text="{Binding Description}" 
+                                                   FontSize="14" 
+                                                   TextColor="Gray" 
+                                                   Margin="0,2,0,0" />
+                                            <StackLayout Orientation="Horizontal" Margin="0,5,0,0">
+                                                <Label Text="{Binding QuestionCount, StringFormat='{0} questions'}" 
+                                                       FontSize="12" 
+                                                       TextColor="{Binding Color}" 
+                                                       FontAttributes="Bold" />
+                                                <Label Text="•" 
+                                                       FontSize="12" 
+                                                       TextColor="Gray" 
+                                                       Margin="5,0" />
+                                                <Label Text="{Binding Difficulty}" 
+                                                       FontSize="12" 
+                                                       TextColor="{Binding Color}" 
+                                                       FontAttributes="Bold" />
+                                            </StackLayout>
+                                        </StackLayout>
+
+                                        <!-- Arrow -->
+                                        <Label Grid.Column="2" 
+                                               Text="▶" 
+                                               FontSize="16" 
+                                               TextColor="{Binding Color}" 
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </Frame>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </ScrollView>
+
+        <!-- Quiz View -->
+        <Grid IsVisible="{Binding IsQuizVisible}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header with quiz info -->
+            <StackLayout Grid.Row="0" Padding="20,10" BackgroundColor="{DynamicResource PrimaryColor}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Back Button -->
+                    <Button Grid.Column="0" 
+                            Text="← Back" 
+                            BackgroundColor="Transparent" 
+                            TextColor="White" 
+                            FontSize="14"
+                            Command="{Binding BackToSectionsCommand}"
+                            Padding="0"
+                            Margin="0,0,10,0" />
+
+                    <StackLayout Grid.Column="1">
+                        <Label Text="{Binding SelectedSection.Name}" 
+                               TextColor="White" 
+                               FontSize="16" 
+                               FontAttributes="Bold" 
+                               HorizontalOptions="Center" />
+                        <Label Text="{Binding QuestionProgressText}" 
+                               TextColor="White" 
+                               FontSize="14" 
+                               HorizontalOptions="Center" />
+                        <ProgressBar Progress="{Binding Progress}" 
+                                    ProgressColor="White" 
+                                    BackgroundColor="#66FFFFFF" 
+                                    Margin="0,5,0,0" />
+                    </StackLayout>
+
+                    <StackLayout Grid.Column="2" HorizontalOptions="End">
+                        <Label Text="{Binding ScoreText}" 
+                               TextColor="White" 
+                               FontSize="14" />
+                        <Label Text="{Binding TimerText}" 
+                               TextColor="White" 
+                               FontSize="14" />
+                    </StackLayout>
+                </Grid>
+            </StackLayout>
+
+            <!-- Main quiz content -->
+            <ScrollView Grid.Row="1" Padding="20">
+                <StackLayout Spacing="20">
+
+                    <!-- Question -->
+                    <Frame BackgroundColor="White" 
+                       BorderColor="{DynamicResource PrimaryColor}" 
+                       CornerRadius="10" 
+                       HasShadow="True" 
+                       Padding="20">
+                        <Label Text="{Binding CurrentQuestion.QuestionText}" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="Black" 
+                           HorizontalTextAlignment="Center" />
+                    </Frame>
+
+                    <!-- Answer options -->
+                    <StackLayout Spacing="15">
+
+                        <Frame BackgroundColor="{Binding OptionABackgroundColor}" 
+                           BorderColor="{Binding OptionABorderColor}" 
+                           CornerRadius="10" 
+                           Padding="15">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectAnswerCommand}" CommandParameter="A" />
+                            </Frame.GestureRecognizers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" 
+                                   Text="A" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="{DynamicResource PrimaryColor}" 
+                                   VerticalOptions="Center" 
+                                   Margin="0,0,15,0" />
+                                <Label Grid.Column="1" 
+                                   Text="{Binding CurrentQuestion.OptionA}"
+                                   FontSize="16" 
+                                   TextColor="Black" 
+                                   VerticalOptions="Center" />
+                            </Grid>
+                        </Frame>
+
+                        <Frame BackgroundColor="{Binding OptionBBackgroundColor}" 
+                           BorderColor="{Binding OptionBBorderColor}" 
+                           CornerRadius="10" 
+                           Padding="15">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectAnswerCommand}" CommandParameter="B" />
+                            </Frame.GestureRecognizers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" 
+                                   Text="B" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="{DynamicResource PrimaryColor}" 
+                                   VerticalOptions="Center" 
+                                   Margin="0,0,15,0" />
+                                <Label Grid.Column="1" 
+                                   Text="{Binding CurrentQuestion.OptionB}"
+                                   FontSize="16" 
+                                   TextColor="Black" 
+                                   VerticalOptions="Center" />
+                            </Grid>
+                        </Frame>
+
+                        <Frame BackgroundColor="{Binding OptionCBackgroundColor}" 
+                           BorderColor="{Binding OptionCBorderColor}" 
+                           CornerRadius="10" 
+                           Padding="15">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectAnswerCommand}" CommandParameter="C" />
+                            </Frame.GestureRecognizers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" 
+                                   Text="C" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="{DynamicResource PrimaryColor}" 
+                                   VerticalOptions="Center" 
+                                   Margin="0,0,15,0" />
+                                <Label Grid.Column="1" 
+                                   Text="{Binding CurrentQuestion.OptionC}"
+                                   FontSize="16" 
+                                   TextColor="Black" 
+                                   VerticalOptions="Center" />
+                            </Grid>
+                        </Frame>
+
+                        <Frame BackgroundColor="{Binding OptionDBackgroundColor}" 
+                           BorderColor="{Binding OptionDBorderColor}" 
+                           CornerRadius="10" 
+                           Padding="15">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectAnswerCommand}" CommandParameter="D" />
+                            </Frame.GestureRecognizers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" 
+                                   Text="D" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="{DynamicResource PrimaryColor}" 
+                                   VerticalOptions="Center" 
+                                   Margin="0,0,15,0" />
+                                <Label Grid.Column="1" 
+                                   Text="{Binding CurrentQuestion.OptionD}"
+                                   FontSize="16" 
+                                   TextColor="Black" 
+                                   VerticalOptions="Center" />
+                            </Grid>
+                        </Frame>
+                    </StackLayout>
+
+                    <!-- Feedback area -->
+                    <Frame BackgroundColor="{Binding FeedbackBackgroundColor}" 
+                       BorderColor="{Binding FeedbackBorderColor}" 
+                       CornerRadius="10" 
+                       Padding="15" 
+                       IsVisible="{Binding IsFeedbackVisible}">
+                        <StackLayout>
+                            <Label Text="{Binding FeedbackText}" 
+                               FontSize="16" 
+                               FontAttributes="Bold" 
+                               TextColor="{Binding FeedbackTextColor}" 
+                               HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding ExplanationText}" 
+                               FontSize="14" 
+                               TextColor="{Binding FeedbackTextColor}" 
+                               HorizontalTextAlignment="Center" 
+                               Margin="0,5,0,0" 
+                               IsVisible="{Binding IsExplanationVisible}" />
+                        </StackLayout>
+                    </Frame>
+                </StackLayout>
+            </ScrollView>
+
+            <!-- Bottom action buttons -->
+            <Grid Grid.Row="2" Margin="20" ColumnSpacing="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" 
+                    Text="Hint" 
+                    BackgroundColor="{DynamicResource TertiaryColor}" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding ShowHintCommand}"
+                    IsVisible="{Binding IsHintButtonVisible}" />
+
+                <Button Grid.Column="1" 
+                    Text="Skip" 
+                    BackgroundColor="#FF9800" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding SkipQuestionCommand}"
+                    IsVisible="{Binding IsSkipButtonVisible}" />
+
+                <Button Grid.Column="2" 
+                    Text="Next" 
+                    BackgroundColor="{DynamicResource PrimaryColor}" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    FontSize="16"
+                    Command="{Binding NextQuestionCommand}"
+                    IsVisible="{Binding IsNextButtonVisible}" />
+            </Grid>
+        </Grid>
+    </Grid>
 </ContentPage>

@@ -31,7 +31,7 @@
                                TextColor="#666" 
                                VerticalOptions="Center" />
                         <ProgressBar Progress="{Binding DailyProgress}" 
-                                     ProgressColor="#4299e1" 
+                                     ProgressColor="#006F8D" 
                                      BackgroundColor="#e2e8f0" 
                                      HeightRequest="8" 
                                      HorizontalOptions="FillAndExpand" />
@@ -119,7 +119,7 @@
                        Margin="0,10,0,5" />
 
                 <!-- Quiz Button -->
-                <Frame BackgroundColor="#4299e1" 
+                <Frame BackgroundColor="#006F8D" 
                        CornerRadius="15" 
                        HasShadow="True" 
                        Padding="0">
