@@ -1,10 +1,11 @@
-﻿using System.Collections.ObjectModel;
+﻿using Microsoft.Maui.Controls;
+using MobileApp.Models;
+using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 
-using MobileApp.Models;
 
 namespace MobileApp.ViewModels
 {
@@ -29,8 +30,7 @@ namespace MobileApp.ViewModels
         private bool _isQuizVisible = false;
 
         public QuizViewModel()
-        {
-            InitializeQuizSections();
+        { 
             InitializeCommands();
         }
 
@@ -520,274 +520,105 @@ namespace MobileApp.ViewModels
             // Return to section selection
             BackToSections();
         }
-
-        private void InitializeQuizSections()
+        public void AddQuestion(QuizQuestion question)
         {
-            QuizSections = new ObservableCollection<QuizSection>
+            if (question != null)
             {
-                new QuizSection
-                {
-                    Id = "general",
-                    Name = "General Knowledge",
-                    Description = "Mixed topics covering various subjects",
-                    Icon = "🧠",
-                    Color = "#2196F3",
-                    QuestionCount = 5,
-                    Difficulty = "Mixed",
-                    Questions = GetGeneralQuestions()
-                },
-                new QuizSection
-                {
-                    Id = "science",
-                    Name = "Science",
-                    Description = "Physics, Chemistry, Biology, and Earth Science",
-                    Icon = "🔬",
-                    Color = "#4CAF50",
-                    QuestionCount = 4,
-                    Difficulty = "Medium",
-                    Questions = GetScienceQuestions()
-                },
-                new QuizSection
-                {
-                    Id = "history",
-                    Name = "History",
-                    Description = "World history and historical events",
-                    Icon = "📚",
-                    Color = "#FF9800",
-                    QuestionCount = 3,
-                    Difficulty = "Hard",
-                    Questions = GetHistoryQuestions()
-                },
-                new QuizSection
-                {
-                    Id = "geography",
-                    Name = "Geography",
-                    Description = "Countries, capitals, and world geography",
-                    Icon = "🌍",
-                    Color = "#9C27B0",
-                    QuestionCount = 3,
-                    Difficulty = "Easy",
-                    Questions = GetGeographyQuestions()
-                },
-                new QuizSection
-                {
-                    Id = "literature",
-                    Name = "Literature",
-                    Description = "Famous books, authors, and literary works",
-                    Icon = "📖",
-                    Color = "#E91E63",
-                    QuestionCount = 2,
-                    Difficulty = "Medium",
-                    Questions = GetLiteratureQuestions()
-                }
-            };
+                // Set category and difficulty if not already set
+                if (string.IsNullOrEmpty(question.Category))
+                    question.Category = "AI Generated";
 
-            
+                if (string.IsNullOrEmpty(question.Difficulty))
+                    question.Difficulty = "Medium";
+
+                Questions.Add(question);
+                OnPropertyChanged(nameof(Questions));
+
+                // Optional: Save to local storage or database
+                SaveQuestionToStorage(question);
+            }
         }
 
-        
-
-        public List<QuizQuestion> GetGeneralQuestions()
+        public void AddQuestions(IEnumerable<QuizQuestion> questions)
         {
-            return new List<QuizQuestion>
+            foreach (var question in questions)
             {
-                new QuizQuestion
-                {
-                    QuestionText = "What is 2 + 2?",
-                    OptionA = "3",
-                    OptionB = "4",
-                    OptionC = "5",
-                    OptionD = "6",
-                    CorrectAnswer = "B",
-                    Explanation = "Basic addition: 2 + 2 = 4",
-                    Hint = "Count on your fingers!",
-                    Category = "general",
-                    Difficulty = 1
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "How many days are in a leap year?",
-                    OptionA = "365",
-                    OptionB = "366",
-                    OptionC = "367",
-                    OptionD = "364",
-                    CorrectAnswer = "B",
-                    Explanation = "A leap year has 366 days, with February having 29 days instead of 28.",
-                    Hint = "It happens every 4 years.",
-                    Category = "general",
-                    Difficulty = 1
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "What is the largest mammal in the world?",
-                    OptionA = "Elephant",
-                    OptionB = "Blue Whale",
-                    OptionC = "Giraffe",
-                    OptionD = "Hippo",
-                    CorrectAnswer = "B",
-                    Explanation = "The Blue Whale is the largest mammal and largest animal ever known to have lived on Earth.",
-                    Hint = "It lives in the ocean.",
-                    Category = "general",
-                    Difficulty = 2
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "Which programming language is known as the 'mother of all languages'?",
-                    OptionA = "C",
-                    OptionB = "Assembly",
-                    OptionC = "Fortran",
-                    OptionD = "COBOL",
-                    CorrectAnswer = "A",
-                    Explanation = "C is often called the mother of modern programming languages due to its influence.",
-                    Hint = "It's a single letter.",
-                    Category = "general",
-                    Difficulty = 3
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "What does 'www' stand for?",
-                    OptionA = "World Wide Web",
-                    OptionB = "World Wide Wire",
-                    OptionC = "World Wide Window",
-                    OptionD = "World Wide Wireless",
-                    CorrectAnswer = "A",
-                    Explanation = "WWW stands for World Wide Web, the information system on the Internet.",
-                    Hint = "You use it to browse the internet.",
-                    Category = "general",
-                    Difficulty = 1
-                }
-            };
+                AddQuestion(question);
+            }
         }
 
-        public List<QuizQuestion> GetScienceQuestions()
+        public void RemoveQuestion(QuizQuestion question)
         {
-            return new List<QuizQuestion>
+            if (Questions.Contains(question))
             {
-                new QuizQuestion
-                {
-                    QuestionText = "What is the chemical symbol for gold?",
-                    OptionA = "Go",
-                    OptionB = "Gd",
-                    OptionC = "Au",
-                    OptionD = "Ag",
-                    CorrectAnswer = "C",
-                    Explanation = "Au comes from the Latin word 'aurum'.",
-                    Hint = "It comes from Latin.",
-                    Category = "science",
-                    Difficulty = 2
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "What is the largest planet in our solar system?",
-                    OptionA = "Earth",
-                    OptionB = "Jupiter",
-                    OptionC = "Saturn",
-                    OptionD = "Neptune",
-                    CorrectAnswer = "B",
-                    Explanation = "Jupiter is the largest planet, with a mass greater than all other planets combined.",
-                    Hint = "It has a famous red spot.",
-                    Category = "science",
-                    Difficulty = 1
-                }
-            };
-        }
-        public List<QuizQuestion> GetHistoryQuestions()
-        {
-            return new List<QuizQuestion>
-            {
-                new QuizQuestion
-                {
-                    QuestionText = "In what year did World War II end?",
-                    OptionA = "1944",
-                    OptionB = "1945",
-                    OptionC = "1946",
-                    OptionD = "1947",
-                    CorrectAnswer = "B",
-                    Explanation = "World War II ended in 1945 with the surrender of Japan in September.",
-                    Hint = "The atomic bombs were dropped this year.",
-                    Category = "history",
-                    Difficulty = 2
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "Who was the first person to walk on the moon?",
-                    OptionA = "Buzz Aldrin",
-                    OptionB = "Neil Armstrong",
-                    OptionC = "John Glenn",
-                    OptionD = "Alan Shepard",
-                    CorrectAnswer = "B",
-                    Explanation = "Neil Armstrong was the first person to walk on the moon on July 20, 1969.",
-                    Hint = "He said 'That's one small step for man...'",
-                    Category = "history",
-                    Difficulty = 2
-                }
-            };
+                Questions.Remove(question);
+                OnPropertyChanged(nameof(Questions));
+
+                // Optional: Remove from storage
+                RemoveQuestionFromStorage(question);
+            }
         }
 
-        public List<QuizQuestion> GetGeographyQuestions()
+        public void ClearAllQuestions()
         {
-            return new List<QuizQuestion>
-            {
-                new QuizQuestion
-                {
-                    QuestionText = "What is the capital of France?",
-                    OptionA = "Paris",
-                    OptionB = "London",
-                    OptionC = "Berlin",
-                    OptionD = "Madrid",
-                    CorrectAnswer = "A",
-                    Explanation = "Paris is the capital and largest city of France.",
-                    Hint = "It's known as the City of Light.",
-                    Category = "geography",
-                    Difficulty = 1
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "Which is the longest river in the world?",
-                    OptionA = "Amazon River",
-                    OptionB = "Nile River",
-                    OptionC = "Mississippi River",
-                    OptionD = "Yangtze River",
-                    CorrectAnswer = "B",
-                    Explanation = "The Nile River is generally considered the longest river in the world at about 6,650 km.",
-                    Hint = "It flows through Egypt.",
-                    Category = "geography",
-                    Difficulty = 2
-                }
-            };
+            Questions.Clear();
+            OnPropertyChanged(nameof(Questions));
+
+            // Optional: Clear storage
+            ClearQuestionsFromStorage();
         }
 
-        public List<QuizQuestion> GetLiteratureQuestions()
+        // Optional: Persistence methods (implement based on your storage solution)
+        private void SaveQuestionToStorage(QuizQuestion question)
         {
-            return new List<QuizQuestion>
+            // Implement your storage logic here
+            // Could be SQLite, Preferences, file system, etc.
+        }
+
+        private void RemoveQuestionFromStorage(QuizQuestion question)
+        {
+            // Implement removal from storage
+        }
+
+        private void ClearQuestionsFromStorage()
+        {
+            // Implement clearing storage
+        }
+
+        // Method to load existing questions if you have persistence
+        public async Task LoadQuestionsAsync()
+        {
+            // Implement loading from storage
+            // var savedQuestions = await LoadFromStorage();
+            // foreach (var question in savedQuestions)
+            // {
+            //     Questions.Add(question);
+            // }
+        }
+
+        // Optional: Method to export/share generated questions
+        public async Task<string> ExportQuestionsAsync()
+        {
+            var json = JsonConvert.SerializeObject(Questions, Formatting.Indented);
+            return json;
+        }
+
+        // Optional: Method to import questions
+        public async Task ImportQuestionsAsync(string json)
+        {
+            try
             {
-                new QuizQuestion
+                var importedQuestions = JsonConvert.DeserializeObject<List<QuizQuestion>>(json);
+                if (importedQuestions != null)
                 {
-                    QuestionText = "Who wrote Romeo and Juliet?",
-                    OptionA = "Charles Dickens",
-                    OptionB = "Jane Austen",
-                    OptionC = "William Shakespeare",
-                    OptionD = "Mark Twain",
-                    CorrectAnswer = "C",
-                    Explanation = "William Shakespeare wrote this famous tragedy in the early part of his career.",
-                    Hint = "This playwright is from Stratford-upon-Avon.",
-                    Category = "literature",
-                    Difficulty = 2
-                },
-                new QuizQuestion
-                {
-                    QuestionText = "Who wrote Romeo and Juliet?",
-                    OptionA = "Charles Dickens",
-                    OptionB = "Jane Austen",
-                    OptionC = "William Shakespeare",
-                    OptionD = "Mark Twain",
-                    CorrectAnswer = "C",
-                    Explanation = "William Shakespeare wrote this famous tragedy in the early part of his career.",
-                    Hint = "This playwright is from Stratford-upon-Avon.",
-                    Category = "literature",
-                    Difficulty = 2
+                    AddQuestions(importedQuestions);
                 }
-            };
+            }
+            catch (Exception ex)
+            {
+                // Handle import error
+                throw new Exception($"Failed to import questions: {ex.Message}");
+            }
         }
        
 

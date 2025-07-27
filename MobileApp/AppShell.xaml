@@ -12,6 +12,8 @@
 
     <ShellContent Title="Flashcards" Route="flashcards" ContentTemplate="{DataTemplate views:FlashcardPage}" />
 
+    <ShellContent Title="AI Quiz Creator" Route="AIQuizCreator" ContentTemplate="{DataTemplate views:AIChatPage}" />
+    
     <ShellContent Title="Settings" Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}" />
 
 </Shell>
