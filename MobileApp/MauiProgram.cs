@@ -26,8 +26,8 @@ namespace MobileApp
 #endif
             var configDict = new Dictionary<string, string>
             {
-
-                ["HuggingFace:Model"] = "microsoft/DialoGPT-medium"
+                ["Groq:ApiKey"] = "",
+                ["Groq:Model"] = "llama3-8b-8192"
             };
 
             var configuration = new ConfigurationBuilder()
@@ -37,7 +37,7 @@ namespace MobileApp
             builder.Services.AddSingleton<IConfiguration>(configuration);
 
             // Register HttpClient and services
-            builder.Services.AddHttpClient<IAIChatService, HuggingFaceAIService>();
+            builder.Services.AddHttpClient<IAIChatService, GroqAIService>();
 
             // Register pages and view models
             builder.Services.AddSingleton<MainPage>();

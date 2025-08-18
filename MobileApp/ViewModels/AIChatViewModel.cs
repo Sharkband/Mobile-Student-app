@@ -59,6 +59,8 @@ public class AIChatViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsNotLoading => !IsLoading;
+
     public bool IsGeneratingQuiz
     {
         get => _isGeneratingQuiz;
@@ -106,17 +108,18 @@ public class AIChatViewModel : INotifyPropertyChanged
                 ChatMessages.Add(new ChatMessage
                 {
                     Role = "assistant",
-                    Content = response,
+                    Content = response ?? "I received an empty response. Please try again.",
                     Timestamp = DateTime.Now
                 });
             }
         }
         catch (Exception ex)
         {
+            var errorMessage = GetSafeErrorMessage(ex);
             ChatMessages.Add(new ChatMessage
             {
                 Role = "assistant",
-                Content = $"Sorry, I encountered an error: {ex.Message}",
+                Content = $"Sorry, I encountered an error: {errorMessage}",
                 Timestamp = DateTime.Now
             });
         }
@@ -128,6 +131,9 @@ public class AIChatViewModel : INotifyPropertyChanged
 
     private bool IsQuizGenerationRequest(string message)
     {
+        if (string.IsNullOrWhiteSpace(message))
+            return false;
+
         var keywords = new[] { "create", "generate", "make", "quiz", "questions", "test" };
         var lowerMessage = message.ToLower();
 
@@ -141,8 +147,23 @@ public class AIChatViewModel : INotifyPropertyChanged
 
         try
         {
+            System.Diagnostics.Debug.WriteLine("=== Starting HandleQuizGenerationRequest ===");
+            System.Diagnostics.Debug.WriteLine($"User message: {userMessage}");
+
             // Parse the request to extract topic, number of questions, etc.
             var request = ParseQuizGenerationRequest(userMessage);
+            System.Diagnostics.Debug.WriteLine($"Parsed request - Topic: {request?.Topic}, Questions: {request?.NumberOfQuestions}, Difficulty: {request?.Difficulty}");
+
+            if (request == null)
+            {
+                ChatMessages.Add(new ChatMessage
+                {
+                    Role = "assistant",
+                    Content = "I couldn't understand your quiz request. Please try something like 'Create 5 questions about math'.",
+                    Timestamp = DateTime.Now
+                });
+                return;
+            }
 
             ChatMessages.Add(new ChatMessage
             {
@@ -151,15 +172,25 @@ public class AIChatViewModel : INotifyPropertyChanged
                 Timestamp = DateTime.Now
             });
 
+            System.Diagnostics.Debug.WriteLine("Calling GenerateQuizQuestionsAsync...");
             var questions = await _aiChatService.GenerateQuizQuestionsAsync(request);
+            System.Diagnostics.Debug.WriteLine($"Received {questions?.Count ?? 0} questions");
 
-            if (questions.Any())
+            if (questions != null && questions.Any())
             {
+                System.Diagnostics.Debug.WriteLine("Adding questions to quiz view model...");
                 // Add questions to your quiz view model
                 foreach (var question in questions)
                 {
-                    _quizViewModel.AddQuestion(question);
+                    if (question != null)
+                    {
+                        _quizViewModel.AddQuestion(question);
+                    }
                 }
+
+                var newSection = _quizViewModel.AddQuizSection(request.Topic, request.Difficulty);
+
+                _quizViewModel.AddQuestionsToSection(newSection, questions);
 
                 ChatMessages.Add(new ChatMessage
                 {
@@ -169,18 +200,30 @@ public class AIChatViewModel : INotifyPropertyChanged
                 });
 
                 // Optionally show a preview of the questions
-                var preview = string.Join("\n\n", questions.Take(2).Select((q, i) =>
-                    $"Preview {i + 1}: {q.Question}\nA) {q.Options[0]}\nB) {q.Options[1]}\nC) {q.Options[2]}\nD) {q.Options[3]}"));
-
-                if (questions.Count > 2)
-                    preview += $"\n\n... and {questions.Count - 2} more questions!";
-
-                ChatMessages.Add(new ChatMessage
+                try
                 {
-                    Role = "assistant",
-                    Content = preview,
-                    Timestamp = DateTime.Now
-                });
+                    var validQuestions = questions.Where(q => q != null && !string.IsNullOrEmpty(q.Question) && q.Options != null && q.Options.Count >= 4).Take(2);
+                    if (validQuestions.Any())
+                    {
+                        var preview = string.Join("\n\n", validQuestions.Select((q, i) =>
+                            $"Preview {i + 1}: {q.Question}\nA) {q.Options[0]}\nB) {q.Options[1]}\nC) {q.Options[2]}\nD) {q.Options[3]}"));
+
+                        if (questions.Count > 2)
+                            preview += $"\n\n... and {questions.Count - 2} more questions!";
+
+                        ChatMessages.Add(new ChatMessage
+                        {
+                            Role = "assistant",
+                            Content = preview,
+                            Timestamp = DateTime.Now
+                        });
+                    }
+                }
+                catch (Exception previewEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error creating preview: {previewEx.Message}");
+                    // Don't show preview if there's an error, but continue
+                }
             }
             else
             {
@@ -194,10 +237,14 @@ public class AIChatViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"ERROR in HandleQuizGenerationRequest: {ex?.GetType()?.Name}: {ex?.Message}");
+            System.Diagnostics.Debug.WriteLine($"Stack trace: {ex?.StackTrace}");
+
+            var errorMessage = GetSafeErrorMessage(ex);
             ChatMessages.Add(new ChatMessage
             {
                 Role = "assistant",
-                Content = $"Sorry, I had trouble generating the quiz questions: {ex.Message}",
+                Content = $"Sorry, I had trouble generating the quiz questions: {errorMessage}",
                 Timestamp = DateTime.Now
             });
         }
@@ -209,66 +256,123 @@ public class AIChatViewModel : INotifyPropertyChanged
 
     private async Task GenerateQuizAsync(string topic)
     {
-        var request = new QuizGenerationRequest
+        try
         {
-            Topic = topic,
-            NumberOfQuestions = 5,
-            Difficulty = "medium",
-            QuestionType = "multiple-choice"
-        };
+            if (string.IsNullOrWhiteSpace(topic))
+            {
+                topic = "general knowledge";
+            }
 
-        await HandleQuizGenerationRequest($"Create {request.NumberOfQuestions} {request.Difficulty} questions about {topic}");
+            var request = new QuizGenerationRequest
+            {
+                Topic = topic,
+                NumberOfQuestions = 5,
+                Difficulty = "medium",
+                QuestionType = "multiple-choice"
+            };
+
+            await HandleQuizGenerationRequest($"Create {request.NumberOfQuestions} {request.Difficulty} questions about {topic}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ERROR in GenerateQuizAsync: {ex?.Message}");
+            var errorMessage = GetSafeErrorMessage(ex);
+            ChatMessages.Add(new ChatMessage
+            {
+                Role = "assistant",
+                Content = $"Error generating quiz: {errorMessage}",
+                Timestamp = DateTime.Now
+            });
+        }
     }
 
     private QuizGenerationRequest ParseQuizGenerationRequest(string message)
     {
-        var request = new QuizGenerationRequest
+        try
         {
-            NumberOfQuestions = 5, // default
-            Difficulty = "medium", // default
-            QuestionType = "multiple-choice" // default
-        };
+            if (string.IsNullOrWhiteSpace(message))
+                return null;
 
-        // Extract number of questions
-        var numberMatch = System.Text.RegularExpressions.Regex.Match(message, @"\b(\d+)\b");
-        if (numberMatch.Success && int.TryParse(numberMatch.Groups[1].Value, out int number))
-        {
-            request.NumberOfQuestions = Math.Max(1, Math.Min(10, number)); // Limit between 1-10
-        }
-
-        // Extract difficulty
-        var lowerMessage = message.ToLower();
-        if (lowerMessage.Contains("easy") || lowerMessage.Contains("beginner"))
-            request.Difficulty = "easy";
-        else if (lowerMessage.Contains("hard") || lowerMessage.Contains("difficult") || lowerMessage.Contains("advanced"))
-            request.Difficulty = "hard";
-
-        // Extract topic (everything after "about" or similar keywords)
-        var topicKeywords = new[] { "about", "on", "regarding", "concerning" };
-        foreach (var keyword in topicKeywords)
-        {
-            var index = lowerMessage.IndexOf(keyword);
-            if (index >= 0)
+            var request = new QuizGenerationRequest
             {
-                request.Topic = message.Substring(index + keyword.Length).Trim();
-                break;
+                NumberOfQuestions = 5, // default
+                Difficulty = "medium", // default
+                QuestionType = "multiple-choice" // default
+            };
+
+            // Extract number of questions
+            var numberMatch = System.Text.RegularExpressions.Regex.Match(message, @"\b(\d+)\b");
+            if (numberMatch.Success && int.TryParse(numberMatch.Groups[1].Value, out int number))
+            {
+                request.NumberOfQuestions = Math.Max(1, Math.Min(10, number)); // Limit between 1-10
             }
-        }
 
-        // If no topic found, try to extract it differently
-        if (string.IsNullOrEmpty(request.Topic))
+            // Extract difficulty
+            var lowerMessage = message.ToLower();
+            if (lowerMessage.Contains("easy") || lowerMessage.Contains("beginner"))
+                request.Difficulty = "easy";
+            else if (lowerMessage.Contains("hard") || lowerMessage.Contains("difficult") || lowerMessage.Contains("advanced"))
+                request.Difficulty = "hard";
+
+            // Extract topic (everything after "about" or similar keywords)
+            var topicKeywords = new[] { "about", "on", "regarding", "concerning" };
+            foreach (var keyword in topicKeywords)
+            {
+                var index = lowerMessage.IndexOf(keyword);
+                if (index >= 0 && index + keyword.Length < message.Length)
+                {
+                    request.Topic = message.Substring(index + keyword.Length).Trim();
+                    break;
+                }
+            }
+
+            // If no topic found, try to extract it differently
+            if (string.IsNullOrEmpty(request.Topic))
+            {
+                // Remove common words and take the remaining as topic
+                var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var commonWords = new[] { "create", "generate", "make", "quiz", "questions", "test", "some", "a", "an", "the" };
+                var topicWords = words.Where(w => !commonWords.Contains(w.ToLower())).ToArray();
+                request.Topic = string.Join(" ", topicWords);
+            }
+
+            if (string.IsNullOrEmpty(request.Topic))
+                request.Topic = "general knowledge";
+
+            return request;
+        }
+        catch (Exception ex)
         {
-            // Remove common words and take the remaining as topic
-            var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var commonWords = new[] { "create", "generate", "make", "quiz", "questions", "test", "some", "a", "an", "the" };
-            var topicWords = words.Where(w => !commonWords.Contains(w.ToLower())).ToArray();
-            request.Topic = string.Join(" ", topicWords);
+            System.Diagnostics.Debug.WriteLine($"Error parsing quiz request: {ex?.Message}");
+            return new QuizGenerationRequest
+            {
+                Topic = "general knowledge",
+                NumberOfQuestions = 5,
+                Difficulty = "medium",
+                QuestionType = "multiple-choice"
+            };
         }
+    }
 
-        if (string.IsNullOrEmpty(request.Topic))
-            request.Topic = "general knowledge";
+    private string GetSafeErrorMessage(Exception ex)
+    {
+        try
+        {
+            if (ex == null)
+                return "Unknown error occurred";
 
-        return request;
+            var message = ex.Message ?? "No error message available";
+
+            // Limit message length to prevent UI issues
+            if (message.Length > 200)
+                message = message.Substring(0, 200) + "...";
+
+            return message;
+        }
+        catch
+        {
+            return "Error processing error message";
+        }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

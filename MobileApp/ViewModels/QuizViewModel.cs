@@ -30,7 +30,9 @@ namespace MobileApp.ViewModels
         private bool _isQuizVisible = false;
 
         public QuizViewModel()
-        { 
+        {
+            _questions = new ObservableCollection<QuizQuestion>();
+            _quizSections = new ObservableCollection<QuizSection>();
             InitializeCommands();
         }
 
@@ -575,9 +577,21 @@ namespace MobileApp.ViewModels
             // Could be SQLite, Preferences, file system, etc.
         }
 
+        private void SaveSectionToStorage(QuizSection questionSection)
+        {
+            // Implement your storage logic here
+            // Could be SQLite, Preferences, file system, etc.
+        }
+
         private void RemoveQuestionFromStorage(QuizQuestion question)
         {
             // Implement removal from storage
+        }
+
+        private void RemoveSectionFromStorage(QuizSection questionSection)
+        {
+            // Implement your storage logic here
+            // Could be SQLite, Preferences, file system, etc.
         }
 
         private void ClearQuestionsFromStorage()
@@ -620,7 +634,73 @@ namespace MobileApp.ViewModels
                 throw new Exception($"Failed to import questions: {ex.Message}");
             }
         }
-       
+
+        public QuizSection AddQuizSection(string topic, string difficulty = "Medium")
+        {
+            // Generate a clean section name from the topic
+            var sectionName = GenerateSectionName(topic);
+
+            var newSection = new QuizSection
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = topic,
+                Color = "#006F8D",
+                Description = $"Quiz about {topic}",
+                Difficulty = difficulty,
+                Questions = new List<QuizQuestion>()
+            };
+
+            QuizSections.Add(newSection);
+            OnPropertyChanged(nameof(QuizSections));
+
+            // Optional: Save to storage
+            SaveSectionToStorage(newSection);
+
+            return newSection;
+        }
+
+        private string GenerateSectionName(string topic)
+        {
+            if (string.IsNullOrWhiteSpace(topic))
+                return $"Quiz {DateTime.Now:MMdd-HHmm}";
+
+            // Clean up the topic
+            var cleaned = topic.Trim();
+
+            // Capitalize first letter
+            if (cleaned.Length > 0)
+                cleaned = char.ToUpper(cleaned[0]) + cleaned.Substring(1);
+
+            // Add "Quiz" if not already present
+            if (!cleaned.ToLower().Contains("quiz"))
+                cleaned += " Quiz";
+
+            // Handle duplicate names
+            var existingNames = QuizSections.Select(s => s.Name).ToHashSet();
+            var originalName = cleaned;
+            var counter = 1;
+
+            while (existingNames.Contains(cleaned))
+            {
+                cleaned = $"{originalName} ({counter++})";
+            }
+
+            return cleaned;
+        }
+
+        public void AddQuestionsToSection(QuizSection section, List<QuizQuestion> questions)
+        {
+            foreach (var question in questions)
+            {
+                if (question != null)
+                {
+                    section.Questions.Add(question);
+                }
+            }
+            section.QuestionCount = questions.Count;
+            OnPropertyChanged(nameof(QuizSections));
+        }
+
 
 
 
