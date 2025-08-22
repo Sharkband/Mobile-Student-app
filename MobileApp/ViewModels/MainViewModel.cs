@@ -1,6 +1,9 @@
 ﻿
+using MobileApp.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,6 +15,8 @@ namespace MobileApp.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+        
+
         private string _welcomeMessage;
         private string _motivationalMessage;
         private double _dailyProgress;
@@ -19,17 +24,32 @@ namespace MobileApp.ViewModels
         private int _currentStreak;
         private int _totalPoints;
         private int _totalSubjects;
+        private int totalQuizzes;
+        
+
+        public int TotalQuizzesCompleted { get; private set; }
+        public double AverageAccuracy { get; private set; }
+        public int TotalQuestionsAnswered { get; private set; }
+        public string LastQuizResult { get; private set; }
+        public ObservableCollection<QuizStatsEventArgs> RecentQuizzes { get; private set; }
 
         public MainViewModel()
         {
             // Initialize default values
             WelcomeMessage = "Welcome back!";
             MotivationalMessage = "Ready to learn something new?";
-            DailyProgress = 0.65;
-            DailyProgressText = "65%";
-            CurrentStreak = 12;
-            TotalPoints = 850;
-            TotalSubjects = 5;
+            DailyProgress = 0.0;
+            DailyProgressText = "0.0%";
+            CurrentStreak = 0;
+            TotalPoints = 0;
+            TotalSubjects = 0;
+
+            RecentQuizzes = new ObservableCollection<QuizStatsEventArgs>();
+
+            LoadStatsFromPreferences();
+
+            // Subscribe to static events - this works even with new instances
+            QuizEventManager.QuizCompleted += OnQuizCompletedEvent;
 
             // Initialize commands
             NavigateToQuizCommand = new Command(async () => await NavigateToQuiz());
@@ -94,6 +114,121 @@ namespace MobileApp.ViewModels
         #endregion
 
         #region Methods
+
+        private void OnQuizCompletedEvent(object sender, QuizStatsEventArgs e)
+        {
+            OnQuizCompleted(e);
+        }
+
+
+        public void OnQuizCompleted( QuizStatsEventArgs e)
+        {
+            if (e == null) return;
+            // Update overall stats
+            TotalQuizzesCompleted++;
+            TotalQuestionsAnswered += e.TotalQuestions;
+
+            totalQuizzes = e.TotalQuizzes;
+            TotalPoints += e.Score * 50;
+
+            // Calculate running average
+            var totalAccuracy = RecentQuizzes.Sum(q => q.Accuracy) + e.Accuracy;
+            AverageAccuracy = totalAccuracy / (RecentQuizzes.Count + 1);
+
+            // Add to recent quizzes
+            RecentQuizzes.Insert(0, e);
+            
+
+            LastQuizResult = $"{e.SectionName}: {e.Score}/{e.TotalQuestions} ({e.Accuracy:F1}%)";
+
+            UpdateValues();
+
+            SaveStatsToPreferences();
+            // Notify UI
+            OnPropertyChanged(nameof(DailyProgress));
+            OnPropertyChanged(nameof(DailyProgressText));
+            OnPropertyChanged(nameof(TotalPoints));
+            OnPropertyChanged(nameof(CurrentStreak));
+            OnPropertyChanged(nameof(TotalSubjects));
+            OnPropertyChanged(nameof(DailyProgress));
+            OnPropertyChanged(nameof(DailyProgressText));
+            /*
+            OnPropertyChanged(nameof(TotalQuizzesCompleted));
+            OnPropertyChanged(nameof(AverageAccuracy));
+            OnPropertyChanged(nameof(TotalQuestionsAnswered));
+            OnPropertyChanged(nameof(LastQuizResult));
+            */
+        }
+
+        private void UpdateValues()
+        {
+            CurrentStreak = TotalQuizzesCompleted;
+            TotalSubjects = totalQuizzes;
+            DailyProgress = AverageAccuracy / 100.0;
+            DailyProgressText = $"{AverageAccuracy:F2}%";
+            
+
+        }
+
+        private void LoadStatsFromPreferences()
+        {
+            try
+            {
+                TotalQuizzesCompleted = Preferences.Get("TotalQuizzesCompleted", 0);
+                TotalQuestionsAnswered = Preferences.Get("TotalQuestionsAnswered", 0);
+                TotalPoints = Preferences.Get("TotalPoints", 0);
+                CurrentStreak = Preferences.Get("CurrentStreak", 0);
+                TotalSubjects = Preferences.Get("TotalSubjects", 0);
+                AverageAccuracy = Preferences.Get("AverageAccuracy", 0.0);
+                LastQuizResult = Preferences.Get("LastQuizResult", "No quizzes completed yet");
+
+                // Load recent quizzes from JSON
+                var recentQuizzesJson = Preferences.Get("RecentQuizzes", "[]");
+                if (!string.IsNullOrEmpty(recentQuizzesJson))
+                {
+                    var recentQuizzes = JsonConvert.DeserializeObject<List<QuizStatsEventArgs>>(recentQuizzesJson) ?? new List<QuizStatsEventArgs>();
+
+                    RecentQuizzes.Clear();
+                    foreach (var quiz in recentQuizzes.Take(10))
+                    {
+                        RecentQuizzes.Add(quiz);
+                    }
+                }
+
+                UpdateValues();
+
+                System.Diagnostics.Debug.WriteLine($"Loaded stats from preferences - Quizzes: {TotalQuizzesCompleted}, Average: {AverageAccuracy:F1}%");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading stats: {ex.Message}");
+            }
+        }
+
+
+        private void SaveStatsToPreferences()
+        {
+            try
+            {
+                Preferences.Set("TotalQuizzesCompleted", TotalQuizzesCompleted);
+                Preferences.Set("TotalQuestionsAnswered", TotalQuestionsAnswered);
+                Preferences.Set("TotalPoints", TotalPoints);
+                Preferences.Set("CurrentStreak", CurrentStreak);
+                Preferences.Set("TotalSubjects", TotalSubjects);
+                Preferences.Set("AverageAccuracy", AverageAccuracy);
+                Preferences.Set("LastQuizResult", LastQuizResult ?? "");
+
+                // Save recent quizzes as JSON
+                var recentQuizzesJson = JsonConvert.SerializeObject(RecentQuizzes.Take(10).ToList());
+                Preferences.Set("RecentQuizzes", recentQuizzesJson);
+
+                System.Diagnostics.Debug.WriteLine($"Saved stats to preferences");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving stats: {ex.Message}");
+            }
+        }
 
         private async Task NavigateToQuiz()
         {

@@ -10,7 +10,10 @@ using System.Windows.Input;
 namespace MobileApp.ViewModels
 {
     public class QuizViewModel : INotifyPropertyChanged
+
     {
+        public event EventHandler<QuizStatsEventArgs> QuizCompleted;
+
         private ObservableCollection<QuizQuestion> _questions;
         private ObservableCollection<QuizSection> _quizSections;
         private QuizSection _selectedSection;
@@ -513,6 +516,20 @@ namespace MobileApp.ViewModels
         {
             // Navigate to results page or show results dialog
             var accuracy = TotalAnswered > 0 ? (Score * 100.0 / TotalAnswered) : 0;
+
+            var stats = new QuizStatsEventArgs
+            {
+                SectionName = SelectedSection?.Name ?? "Unknown",
+                Score = Score,
+                TotalQuestions = TotalAnswered,
+                Accuracy = accuracy,
+                TotalQuizzes = QuizSections.Count,
+                Difficulty = SelectedSection?.Difficulty ?? "Medium",
+
+            };
+
+            QuizEventManager.RaiseQuizCompleted(stats);
+
             var message = $"Quiz: {SelectedSection?.Name}\n" +
                          $"Your final score: {Score}/{TotalAnswered}\n" +
                          $"Accuracy: {accuracy:F1}%";
