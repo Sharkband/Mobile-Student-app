@@ -24,6 +24,8 @@ namespace MobileApp.ViewModels
         private int _currentStreak;
         private int _totalPoints;
         private int _totalSubjects;
+        private string _lastQuizScore;
+        private string _lastQuizAccuracy;
         private int totalQuizzes;
         
 
@@ -52,6 +54,7 @@ namespace MobileApp.ViewModels
             QuizEventManager.QuizCompleted += OnQuizCompletedEvent;
 
             // Initialize commands
+            NavigateToAiCommand = new Command(async () => await NavigateToAi());
             NavigateToQuizCommand = new Command(async () => await NavigateToQuiz());
             NavigateToFlashcardsCommand = new Command(async () => await NavigateToFlashcards());
         }
@@ -104,10 +107,23 @@ namespace MobileApp.ViewModels
             set => SetProperty(ref _totalSubjects, value);
         }
 
+        public string LastQuizScore
+        {
+            get => _lastQuizScore;
+            set => SetProperty(ref _lastQuizScore, value);
+        }
+
+        public string LastQuizAccuracy
+        {
+            get => _lastQuizAccuracy;
+            set => SetProperty(ref _lastQuizAccuracy, value);
+        }
+
         #endregion
 
         #region Commands
 
+        public ICommand NavigateToAiCommand { get; private set; }
         public ICommand NavigateToQuizCommand { get; private set; }
         public ICommand NavigateToFlashcardsCommand { get; private set; }
 
@@ -139,7 +155,10 @@ namespace MobileApp.ViewModels
             RecentQuizzes.Insert(0, e);
             
 
-            LastQuizResult = $"{e.SectionName}: {e.Score}/{e.TotalQuestions} ({e.Accuracy:F1}%)";
+            LastQuizResult = $"{e.SectionName}";
+
+            LastQuizAccuracy = $"{e.Accuracy:F1}%";
+            LastQuizScore = $"{e.Score}/{e.TotalQuestions}"; 
 
             UpdateValues();
 
@@ -152,11 +171,14 @@ namespace MobileApp.ViewModels
             OnPropertyChanged(nameof(TotalSubjects));
             OnPropertyChanged(nameof(DailyProgress));
             OnPropertyChanged(nameof(DailyProgressText));
+            OnPropertyChanged(nameof(LastQuizResult));
+            OnPropertyChanged(nameof(LastQuizScore));
+            OnPropertyChanged(nameof(LastQuizAccuracy));
             /*
             OnPropertyChanged(nameof(TotalQuizzesCompleted));
             OnPropertyChanged(nameof(AverageAccuracy));
             OnPropertyChanged(nameof(TotalQuestionsAnswered));
-            OnPropertyChanged(nameof(LastQuizResult));
+            
             */
         }
 
@@ -234,6 +256,13 @@ namespace MobileApp.ViewModels
         {
             // TODO: Navigate to quiz page
             await Shell.Current.GoToAsync("//quiz");
+            //await Application.Current.MainPage.DisplayAlert("Navigation", "Navigate to Quiz Page", "OK");
+        }
+
+        private async Task NavigateToAi()
+        {
+            // TODO: Navigate to quiz page
+            await Shell.Current.GoToAsync("//AIQuizCreator");
             //await Application.Current.MainPage.DisplayAlert("Navigation", "Navigate to Quiz Page", "OK");
         }
 

@@ -31,6 +31,8 @@ namespace MobileApp.ViewModels
         private bool _isExplanationVisible;
         private bool _isSectionSelectionVisible = true;
         private bool _isQuizVisible = false;
+        public int QuizSectionsCount => QuizSections?.Count ?? 0;
+        public string QuizSectionsText => $"Quizzes ({QuizSectionsCount})";
 
         public QuizViewModel()
         {
@@ -48,6 +50,12 @@ namespace MobileApp.ViewModels
                 _quizSections = value;
                 OnPropertyChanged();
             }
+        }
+
+        private void OnQuizSectionsChanged()
+        {
+            OnPropertyChanged(nameof(QuizSectionsText));
+            OnPropertyChanged(nameof(QuizSectionsCount));
         }
 
         public QuizSection SelectedSection
@@ -665,13 +673,17 @@ namespace MobileApp.ViewModels
                 Description = $"Quiz about {topic}",
                 Difficulty = difficulty,
                 Questions = new List<QuizQuestion>()
+                
             };
 
             QuizSections.Add(newSection);
             OnPropertyChanged(nameof(QuizSections));
+            OnQuizSectionsChanged();
 
             // Optional: Save to storage
             SaveSectionToStorage(newSection);
+
+            
 
             return newSection;
         }

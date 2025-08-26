@@ -105,7 +105,10 @@
                 <Entry Grid.Column="0"
                        Text="{Binding CurrentMessage}"
                        Placeholder="Ask me to create quiz questions..."
-                       BackgroundColor="LightGray"/>
+                       PlaceholderColor="White"
+                       TextColor="White"
+                       BackgroundColor="LightBlue"/>
+                       
 
                 <Button Grid.Column="1"
                         Text="Send"

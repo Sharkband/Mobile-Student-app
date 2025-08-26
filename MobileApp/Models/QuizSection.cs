@@ -13,6 +13,7 @@ namespace MobileApp.Models
         public string Description { get; set; }
         public string Icon { get; set; }
         public string Color { get; set; }
+        public string DifficultyColor { get; set; }
         public int QuestionCount { get; set; }
         public string Difficulty { get; set; }
 

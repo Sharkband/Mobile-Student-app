@@ -13,16 +13,22 @@
 
                 <!-- Header -->
                 <StackLayout BackgroundColor="{DynamicResource PrimaryColor}" Padding="20" Margin="-20,0,-20,0">
+                    <Label Text="{Binding QuizSectionsText}" 
+                           FontSize="16" 
+                           TextColor="#006F8D"
+                           FontAttributes="Bold"
+                           HorizontalOptions="End" />
                     <Label Text="Choose Quiz Section" 
                            FontSize="24" 
                            FontAttributes="Bold" 
-                           TextColor="White" 
+                           TextColor="Black" 
                            HorizontalOptions="Center" />
-                    <Label Text="Select a topic to start your quiz" 
+                    <Label Text="Create quizzes from the AI tool!" 
                            FontSize="16" 
-                           TextColor="White" 
+                           TextColor="Black" 
                            HorizontalOptions="Center" 
                            Margin="0,5,0,0" />
+                    
                 </StackLayout>
 
                 <!-- Quiz Sections -->
@@ -86,7 +92,7 @@
                                         <Label Grid.Column="2" 
                                                Text="▶" 
                                                FontSize="16" 
-                                               TextColor="{Binding Color}" 
+                                               TextColor="#FF9800" 
                                                VerticalOptions="Center" />
                                     </Grid>
                                 </Frame>
@@ -116,8 +122,8 @@
 
                     <!-- Back Button -->
                     <Button Grid.Column="0" 
-                            Text="← Back" 
-                            BackgroundColor="Transparent" 
+                            Text="Back" 
+                            BackgroundColor="#FF9800" 
                             TextColor="White" 
                             FontSize="14"
                             Command="{Binding BackToSectionsCommand}"
@@ -126,26 +132,26 @@
 
                     <StackLayout Grid.Column="1">
                         <Label Text="{Binding SelectedSection.Name}" 
-                               TextColor="White" 
+                               TextColor="Black" 
                                FontSize="16" 
                                FontAttributes="Bold" 
                                HorizontalOptions="Center" />
                         <Label Text="{Binding QuestionProgressText}" 
-                               TextColor="White" 
+                               TextColor="Black" 
                                FontSize="14" 
                                HorizontalOptions="Center" />
                         <ProgressBar Progress="{Binding Progress}" 
-                                    ProgressColor="White" 
+                                    ProgressColor="Black" 
                                     BackgroundColor="#66FFFFFF" 
                                     Margin="0,5,0,0" />
                     </StackLayout>
 
                     <StackLayout Grid.Column="2" HorizontalOptions="End">
                         <Label Text="{Binding ScoreText}" 
-                               TextColor="White" 
+                               TextColor="Black" 
                                FontSize="14" />
                         <Label Text="{Binding TimerText}" 
-                               TextColor="White" 
+                               TextColor="Black" 
                                FontSize="14" />
                     </StackLayout>
                 </Grid>
@@ -311,15 +317,6 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0" 
-                    Text="Hint" 
-                    BackgroundColor="{DynamicResource TertiaryColor}" 
-                    TextColor="White" 
-                    CornerRadius="8" 
-                    FontSize="16"
-                    Command="{Binding ShowHintCommand}"
-                    IsVisible="{Binding IsHintButtonVisible}" />
-
                 <Button Grid.Column="1" 
                     Text="Skip" 
                     BackgroundColor="#FF9800" 
@@ -331,7 +328,7 @@
 
                 <Button Grid.Column="2" 
                     Text="Next" 
-                    BackgroundColor="{DynamicResource PrimaryColor}" 
+                    BackgroundColor="#006F8D" 
                     TextColor="White" 
                     CornerRadius="8" 
                     FontSize="16"
