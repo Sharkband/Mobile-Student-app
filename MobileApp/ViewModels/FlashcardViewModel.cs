@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
+using MobileApp.Models;
 
 namespace MobileApp.ViewModels
 {
@@ -196,6 +197,13 @@ namespace MobileApp.ViewModels
                 new Flashcard { Front = "Who painted the Mona Lisa?", Back = "Leonardo da Vinci" },
                 new Flashcard { Front = "What is the smallest prime number?", Back = "2" }
             };
+        }
+
+        public void addFlashCard(QuizQuestion question)
+        {
+            Flashcards.Add(new Flashcard { Front = question.Question, Back = question.CorrectAnswer });
+
+
         }
 
         // INotifyPropertyChanged implementation

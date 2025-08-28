@@ -19,11 +19,11 @@
         <!-- Header with progress -->
         <StackLayout Grid.Row="0" Padding="20,10" BackgroundColor="{DynamicResource PrimaryColor}">
             <Label Text="{Binding ProgressText}" 
-                   TextColor="White" 
+                   TextColor="Black" 
                    FontSize="16" 
                    HorizontalOptions="Center" />
             <ProgressBar Progress="{Binding Progress}" 
-                        ProgressColor="White" 
+                        ProgressColor="Black" 
                         BackgroundColor="#66FFFFFF" 
                         Margin="0,5,0,0" />
         </StackLayout>
@@ -89,7 +89,7 @@
 
             <Button Grid.Column="0" 
                     Text="Previous" 
-                    BackgroundColor="{DynamicResource SecondaryColor}" 
+                    BackgroundColor="#006F8D" 
                     TextColor="White" 
                     CornerRadius="8" 
                     FontSize="16"
@@ -98,7 +98,7 @@
 
             <Button Grid.Column="1" 
                     Text="Shuffle" 
-                    BackgroundColor="{DynamicResource TertiaryColor}" 
+                    BackgroundColor="#006F8D" 
                     TextColor="White" 
                     CornerRadius="8" 
                     FontSize="16"
@@ -106,7 +106,7 @@
 
             <Button Grid.Column="2" 
                     Text="Next" 
-                    BackgroundColor="{DynamicResource SecondaryColor}" 
+                    BackgroundColor="#006F8D" 
                     TextColor="White" 
                     CornerRadius="8" 
                     FontSize="16"

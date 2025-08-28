@@ -10,16 +10,18 @@ using MobileApp.Models;
 public class AIChatViewModel : INotifyPropertyChanged
 {
     private readonly IAIChatService _aiChatService;
-    private readonly QuizViewModel _quizViewModel; // Reference to your existing quiz view model
+    private readonly QuizViewModel _quizViewModel; // Reference to existing quiz view model
+    private readonly FlashcardViewModel _flashCardViewModel; // Reference to existing flash card view model
 
     private string _currentMessage = string.Empty;
     private bool _isLoading = false;
     private bool _isGeneratingQuiz = false;
 
-    public AIChatViewModel(IAIChatService aiChatService, QuizViewModel quizViewModel)
+    public AIChatViewModel(IAIChatService aiChatService, QuizViewModel quizViewModel, FlashcardViewModel flashcardViewModel)
     {
         _aiChatService = aiChatService;
         _quizViewModel = quizViewModel;
+        _flashCardViewModel = flashcardViewModel;
 
         ChatMessages = new ObservableCollection<ChatMessage>();
         SendMessageCommand = new Command(async () => await SendMessageAsync(), () => !IsLoading && !string.IsNullOrWhiteSpace(CurrentMessage));
@@ -185,6 +187,7 @@ public class AIChatViewModel : INotifyPropertyChanged
                     if (question != null)
                     {
                         _quizViewModel.AddQuestion(question);
+                        _flashCardViewModel.addFlashCard(question);
                     }
                 }
 
