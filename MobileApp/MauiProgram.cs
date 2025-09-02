@@ -27,7 +27,7 @@ namespace MobileApp
             var configDict = new Dictionary<string, string>
             {
                 ["Groq:ApiKey"] = "",
-                ["Groq:Model"] = "llama3-8b-8192"
+                ["Groq:Model"] = "llama-3.1-8b-instant"
             };
 
             var configuration = new ConfigurationBuilder()
